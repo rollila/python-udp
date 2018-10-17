@@ -11,3 +11,7 @@ def deserialize(packet):
         'id': unpacked[0],
         'location': (unpacked[1], unpacked[2])
     }
+
+
+def item_size():
+    return struct.calcsize('III')
