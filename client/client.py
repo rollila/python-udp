@@ -1,3 +1,4 @@
+import copy
 import pickle
 import random
 import socket
@@ -8,7 +9,7 @@ sys.path.append('../shared')
 
 
 import time
-from threading import Timer
+from threading import Lock, Timer
 from state_updater import StateUpdater
 import server_to_client
 import shared_utils
@@ -32,6 +33,8 @@ players = {}
 state_updater = StateUpdater(
     sock=sock, updates_per_second=60, state=my_state, server_address=SERVER_ADDRESS)
 
+lock = Lock()
+
 
 def print_update():
     print('\033[H\033[J')
@@ -39,7 +42,11 @@ def print_update():
 
     if (len(players) > 0):
         print('I can see the following other players:')
-        for player_id in players:
+        lock.acquire()
+        playerlist = copy.deepcopy(players)
+        lock.release()
+
+        for player_id in playerlist:
             player = players[player_id]
             print('Player id: {}, location: ({}, {}), distance from me: {}'.format(
                 player['id'], player['location'][0], player['location'][1], shared_utils.distance(my_state['location'], player['location'])))
@@ -52,8 +59,10 @@ def prune_lost():
         if (player['last_updated'] - time.time() - OBJECT_LIFETIME):
             todel.append(player_id)
 
+    lock.acquire()
     for player_id in todel:
         del players[player_id]
+    lock.release()
 
     timer = Timer(1, prune_lost)
     timer.start()
@@ -77,6 +86,7 @@ while True:
     unpacked_players = [server_to_client.deserialize(
         unpacked[i]) for i in range(1, len(unpacked))]
 
+    lock.acquire()
     for player in unpacked_players:
         try:
             players[player['id']]['location'] = player['location']
@@ -84,5 +94,6 @@ while True:
         except:
             players[player['id']] = player
             players[player['id']]['last_updated'] = time.time()
+    lock.release()
 
     print_update()

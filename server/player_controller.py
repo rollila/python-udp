@@ -1,6 +1,7 @@
+import copy
 import pickle
 import time
-from threading import Timer
+from threading import Lock, Timer
 from player_state import PlayerState
 from client_state import ClientState
 
@@ -12,6 +13,7 @@ class PlayerController:
         self.next_player_id = 0
         self.timer = Timer(20, self.prune_disconnected)
         self.timer.start()
+        self.lock = Lock()
 
     def add_player(self, address, location):
         self.next_player_id += 1
@@ -29,19 +31,28 @@ class PlayerController:
                 self.players[player_id].last_received_timestamp = time.time()
 
     def prune_disconnected(self):
-        todel = []
-        for player_id in self.players:
-            client = self.players[player_id]
-            if (client.disconnected):
-                todel.append(player_id)
-            elif (client.last_received_timestamp < time.time() - 20):
-                client.disconnected = True
+        self.lock.acquire()
+        try:
+            todel = []
+            for player_id in self.players:
+                client = self.players[player_id]
+                if (client.disconnected):
+                    todel.append(player_id)
+                elif (client.last_received_timestamp < time.time() - 20):
+                    client.disconnected = True
 
-        for player_id in todel:
-            del self.players[player_id]
-
-        self.timer = Timer(1, self.prune_disconnected)
-        self.timer.start()
+            for player_id in todel:
+                del self.players[player_id]
+        finally:
+            self.lock.release()
+            self.timer = Timer(1, self.prune_disconnected)
+            self.timer.start()
 
     def has_player_with_address(self, address):
         return any(self.players[player_id].address == address for player_id in self.players)
+
+    def get_clients(self):
+        self.lock.acquire()
+        clients = copy.deepcopy(self.players)
+        self.lock.release()
+        return clients

@@ -56,7 +56,7 @@ sock.bind(server_address)
 
 players = PlayerController()
 state_broadcaster = StateBroadcaster(
-    players.players, sock, MAX_BYTES_PER_SEC, TARGET_OBJECT_NUMBER, MAX_PLAYERS, server_address[0], server_address[1])
+    players, sock, MAX_BYTES_PER_SEC, TARGET_OBJECT_NUMBER, MAX_PLAYERS, server_address[0], server_address[1])
 
 
 while True:

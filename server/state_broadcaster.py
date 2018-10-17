@@ -31,8 +31,9 @@ class StateBroadcaster:
             self.target_object_number))
         print('Updating at {} messages per second, max message size: {} bytes'.format(
             self.updates_per_sec, self.bytes_per_message()))
-        print('Number of connected players: {} / {}'.format(len(self.clients), self.max_players))
-        clients = self.clients
+        print('Number of connected players: {} / {}'.format(
+            len(self.clients.players), self.max_players))
+        clients = self.clients.get_clients()
         sock = self.sock
         messages = []
 
@@ -61,7 +62,7 @@ class StateBroadcaster:
         self.timer.start()
 
     def build_message(self, player_id):
-        clients = self.clients
+        clients = self.clients.get_clients()
         message = [clients[player_id].last_sent_seq]
 
         item_size = server_to_client.item_size()
@@ -96,7 +97,7 @@ class StateBroadcaster:
         return sorted(player_states, key=lambda player: shared_utils.distance(origin_player.location, player.location))
 
     def bytes_per_message(self):
-        return math.floor(self.max_bytes_per_sec / max(1, len(self.clients)) / self.updates_per_sec)
+        return math.floor(self.max_bytes_per_sec / max(1, len(self.clients.players)) / self.updates_per_sec)
 
     def increase_updates_per_sec(self):
         self.updates_per_sec += 1
