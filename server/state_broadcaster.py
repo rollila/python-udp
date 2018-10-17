@@ -9,22 +9,29 @@ import shared_utils
 
 class StateBroadcaster:
 
-    def __init__(self, clients, sock, max_bytes_per_sec, target_object_number):
+    def __init__(self, clients, sock, max_bytes_per_sec, target_object_number, max_players, address, port):
         self.clients = clients
         self.sock = sock
         self.max_bytes_per_sec = max_bytes_per_sec
         self.target_object_number = target_object_number
         self.updates_per_sec = 60
         self.update_increase_timer = None
+        self.max_players = max_players
+        self.address = address
+        self.port = port
 
         self.timer = Timer(1 / self.updates_per_sec, self.broadcast_state)
         self.timer.start()
 
     def broadcast_state(self):
         print('\033[H\033[J')
+        print('Server running at {} port {}'.format(self.address, self.port))
+        print('Maximum allowed bandwidth: {} bytes/sec'.format(self.max_bytes_per_sec))
+        print('Target number of objects per update: {} '.format(
+            self.target_object_number))
         print('Updating at {} messages per second, max message size: {} bytes'.format(
             self.updates_per_sec, self.bytes_per_message()))
-        print('Number of connected players: {}'.format(len(self.clients)))
+        print('Number of connected players: {} / {}'.format(len(self.clients), self.max_players))
         clients = self.clients
         sock = self.sock
         messages = []

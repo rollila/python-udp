@@ -41,8 +41,8 @@ def print_update():
         print('I can see the following other players:')
         for player_id in players:
             player = players[player_id]
-            print('Id: {}, distance from me: {}'.format(
-                player['id'], shared_utils.distance(my_state['location'], player['location'])))
+            print('Player id: {}, location: ({}, {}), distance from me: {}'.format(
+                player['id'], player['location'][0], player['location'][1], shared_utils.distance(my_state['location'], player['location'])))
 
 
 def prune_lost():

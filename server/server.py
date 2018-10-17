@@ -1,3 +1,4 @@
+import argparse
 import pickle
 import socket
 import sys
@@ -12,9 +13,19 @@ from state_broadcaster import StateBroadcaster
 import server_to_client
 import client_to_server
 
-MAX_PLAYERS = 10
-MAX_KBITS_PER_SEC = 75
-TARGET_OBJECT_NUMBER = 5
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--maxplayers', help='Maximum supported concurrent players')
+parser.add_argument(
+    '--objects', help='Minimum number of objects to send to each player during each update')
+parser.add_argument(
+    '--bandwidth', help='Maximum allowed bandwidth use in kbits/sec')
+
+args = parser.parse_args()
+
+MAX_PLAYERS = int(args.maxplayers) if args.maxplayers != None else 100
+MAX_KBITS_PER_SEC = int(args.bandwidth) if args.bandwidth != None else 1000
+TARGET_OBJECT_NUMBER = int(args.objects) if args.objects != None else 10
 MAX_BYTES_PER_SEC = MAX_KBITS_PER_SEC * 1000 / 8
 
 
@@ -41,12 +52,11 @@ def handle(data, address):
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = ('localhost', 6666)
-print('Server starting up on {} port {}'.format(*server_address))
 sock.bind(server_address)
 
 players = PlayerController()
 state_broadcaster = StateBroadcaster(
-    players.players, sock, MAX_BYTES_PER_SEC, TARGET_OBJECT_NUMBER)
+    players.players, sock, MAX_BYTES_PER_SEC, TARGET_OBJECT_NUMBER, MAX_PLAYERS, server_address[0], server_address[1])
 
 
 while True:
