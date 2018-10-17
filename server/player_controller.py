@@ -42,3 +42,6 @@ class PlayerController:
 
         self.timer = Timer(1, self.prune_disconnected)
         self.timer.start()
+
+    def has_player_with_address(self, address):
+        return any(self.players[player_id].address == address for player_id in self.players)

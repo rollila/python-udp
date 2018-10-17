@@ -41,7 +41,10 @@ def print_update():
 
 
 while True:
-    data, address = sock.recvfrom(1024)
+    data, address = sock.recvfrom(60000)
+    if (data == b'not_recognized'):
+        raise RuntimeError('Disconnected from server')
+
     unpacked = pickle.loads(data)
 
     seq_nr = unpacked[0]
