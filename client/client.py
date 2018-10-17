@@ -47,7 +47,7 @@ def print_update():
         lock.release()
 
         for player_id in playerlist:
-            player = players[player_id]
+            player = playerlist[player_id]
             print('Player id: {}, location: ({}, {}), distance from me: {}'.format(
                 player['id'], player['location'][0], player['location'][1], shared_utils.distance(my_state['location'], player['location'])))
 
